@@ -53,20 +53,7 @@ tail -f ~/code/rss-reader/rss-reader.log
 
 ## Sandbox
 
-The server runs inside a macOS sandbox (`rss-reader.sb`) that restricts what the process can do. This limits damage if a dependency is ever compromised.
-
-**What the sandbox allows:**
-- Reading its own source code and Python installation
-- Reading and writing the SQLite database files (`rss_reader.db`, `-wal`, `-shm`, `-journal`)
-- Outbound network access (to fetch RSS feeds)
-- Binding to localhost:5000
-
-**What the sandbox blocks:**
-- Reading ~/Documents, ~/Desktop, ~/Downloads, ~/Pictures, ~/Movies, ~/Music
-- Reading ~/.ssh, ~/.gnupg, ~/.aws, ~/.config, ~/Library/Keychains
-- Writing to anything under your home directory except the database files
-
-The sandbox profile is a plain text file at `rss-reader.sb`. Edit it to tighten or loosen restrictions.
+Runs inside a macOS sandbox (`rss-reader.sb`) — limits filesystem access to what the app actually needs.
 
 ## How it works
 

@@ -1,0 +1,13 @@
+[project]
+name = "rss-reader"
+version = "0.1.0"
+description = "A lightweight RSS reader"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask",
+    "feedparser",
+]
+
+[project.scripts]
+rss-reader = "app:app.run"

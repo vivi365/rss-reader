@@ -1,0 +1,26 @@
+(version 1)
+(allow default)
+
+;; Deny read access to sensitive user directories
+(deny file-read*
+    (subpath "/Users/viviandersson/Documents")
+    (subpath "/Users/viviandersson/Desktop")
+    (subpath "/Users/viviandersson/Downloads")
+    (subpath "/Users/viviandersson/Pictures")
+    (subpath "/Users/viviandersson/Movies")
+    (subpath "/Users/viviandersson/Music")
+    (subpath "/Users/viviandersson/.ssh")
+    (subpath "/Users/viviandersson/.gnupg")
+    (subpath "/Users/viviandersson/.aws")
+    (subpath "/Users/viviandersson/.config")
+    (subpath "/Users/viviandersson/Library/Keychains"))
+
+;; Deny write to the entire home dir
+(deny file-write* (subpath "/Users/viviandersson"))
+
+;; Re-allow writes to ONLY the database files
+(allow file-write*
+    (literal "/Users/viviandersson/code/rss-reader/rss_reader.db")
+    (literal "/Users/viviandersson/code/rss-reader/rss_reader.db-wal")
+    (literal "/Users/viviandersson/code/rss-reader/rss_reader.db-shm")
+    (literal "/Users/viviandersson/code/rss-reader/rss_reader.db-journal"))

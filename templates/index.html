@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS Reader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <h1>RSS Reader</h1>
+            <div class="header-actions">
+                <button id="mark-all-read-btn" title="Mark all as read">Mark all read</button>
+                <button id="refresh-btn" title="Refresh all feeds">Refresh</button>
+            </div>
+        </header>
+        <div class="layout">
+            <aside class="sidebar">
+                <nav class="feed-list">
+                    <a href="#" class="feed-item active" data-feed-id="all">
+                        <span class="feed-name">All feeds</span>
+                        <span class="feed-count" id="all-count"></span>
+                    </a>
+                </nav>
+                <div class="add-feed">
+                    <input type="text" id="feed-url-input" placeholder="Paste feed URL..." />
+                    <button id="add-feed-btn">Add</button>
+                </div>
+            </aside>
+            <main class="content">
+                <div id="articles-list" class="articles-list">
+                    <p class="empty-state">Add a feed to get started.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

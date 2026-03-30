@@ -102,10 +102,3 @@ SQLite, stored at `rss_reader.db` in the project root. Tables:
 | PATCH | `/api/articles/<id>` | Update article (body: `{"is_read": true}` or `{"is_starred": true}`) |
 | POST | `/api/articles/mark-all-read` | Mark all (or filtered by feed_id) as read |
 
-## UI tips
-
-- Hover a feed in the sidebar to see the `#` (edit tags) and `x` (remove) buttons
-- Hover a tag in the sidebar to see the pencil (rename) button
-- Click an article title to open it in a new tab (auto-marks as read)
-- Click the star on an article to save it, then use "Starred" filter in sidebar
-- Tags are comma-separated when creating new ones in the tag editor

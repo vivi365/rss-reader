@@ -9,5 +9,8 @@ dependencies = [
     "feedparser",
 ]
 
+[tool.uv]
+exclude-newer = "7 days"
+
 [project.scripts]
 rss-reader = "app:app.run"

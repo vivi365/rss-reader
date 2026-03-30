@@ -25,7 +25,7 @@ uv run python app.py
 
 Starts the server at http://127.0.0.1:5000. Ctrl+C to stop.
 
-### Launch agent (runs on login, restarts on crash)
+### Launch agent (macOS only — runs on login, restarts on crash)
 
 Load:
 

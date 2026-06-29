@@ -70,6 +70,16 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function safeUrl(url) {
+    if (!url) return "#";
+    try {
+        const u = new URL(url);
+        return (u.protocol === "http:" || u.protocol === "https:") ? url : "#";
+    } catch {
+        return "#";
+    }
+}
+
 // --- Sidebar state helpers ---
 
 function setFilter(feedId, tag, starred) {
@@ -221,7 +231,7 @@ async function loadArticles(restoreScrollTop) {
             </div>
             <div class="article-header">
                 <div class="article-title">
-                    <a href="${escapeHtml(a.url || "#")}" target="_blank" rel="noopener" data-article-id="${a.id}">${escapeHtml(a.title)}</a>
+                    <a href="${safeUrl(a.url)}" target="_blank" rel="noopener" data-article-id="${a.id}">${escapeHtml(a.title)}</a>
                 </div>
                 <button class="star-btn ${a.is_starred ? "starred" : ""}" data-id="${a.id}" data-starred="${a.is_starred}" title="${a.is_starred ? "Unstar" : "Star"}">&#9733;</button>
             </div>
@@ -439,6 +449,11 @@ document.getElementById("refresh-btn").addEventListener("click", async () => {
 });
 
 document.getElementById("mark-all-read-btn").addEventListener("click", async () => {
+    const message = currentFeedId !== null
+        ? `Mark all articles in "${feeds.find((feed) => feed.id === currentFeedId)?.title || "this feed"}" as read?`
+        : "Mark all articles as read?";
+    if (!window.confirm(message)) return;
+
     const body = currentFeedId !== null ? { feed_id: currentFeedId } : {};
     await api("POST", "/api/articles/mark-all-read", body);
     await loadSidebar();

@@ -147,8 +147,9 @@ def api_add_feed():
 
     try:
         parsed = fetch_feed(url)
-    except Exception as e:
-        return jsonify({"error": f"Could not fetch feed: {e}"}), 400
+    except Exception:
+        app.logger.warning("Could not fetch feed", exc_info=True)
+        return jsonify({"error": "Could not fetch feed"}), 400
 
     try:
         feed_id = add_feed(
@@ -301,8 +302,8 @@ def api_get_articles_for_automation():
             fetched_before=_parse_timestamp_arg("fetched_before"),
             limit=limit,
         )
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
+    except ValueError:
+        return jsonify({"error": "Invalid query parameters"}), 400
 
     return jsonify({"articles": articles, "count": len(articles), "limit": limit})
 

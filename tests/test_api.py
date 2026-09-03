@@ -192,6 +192,27 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(invalid_limit.status_code, 400)
         self.assertEqual(non_numeric_limit.status_code, 400)
         self.assertEqual(invalid_date.status_code, 400)
+        self.assertEqual(invalid_read.get_json()["error"], "Invalid query parameters")
+
+    def test_add_feed_does_not_expose_fetch_exception(self):
+        with (
+            patch.object(
+                app_module,
+                "fetch_feed",
+                side_effect=RuntimeError("private implementation detail"),
+            ),
+            patch.object(app_module.app.logger, "warning") as warning,
+        ):
+            response = self.client.post(
+                "/api/feeds", json={"url": "https://example.test/feed"}
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json()["error"], "Could not fetch feed")
+        self.assertNotIn(
+            "private implementation detail", response.get_data(as_text=True)
+        )
+        warning.assert_called_once_with("Could not fetch feed", exc_info=True)
 
 
 if __name__ == "__main__":

@@ -78,12 +78,15 @@ def get_feeds():
     result = []
     for f in feeds:
         d = dict(f)
-        tags = conn.execute("""
+        tags = conn.execute(
+            """
             SELECT t.name FROM tags t
             JOIN feed_tags ft ON ft.tag_id = t.id
             WHERE ft.feed_id = ?
             ORDER BY t.name
-        """, (d["id"],)).fetchall()
+        """,
+            (d["id"],),
+        ).fetchall()
         d["tags"] = [t["name"] for t in tags]
         result.append(d)
     conn.close()
@@ -111,7 +114,15 @@ def add_articles(feed_id, articles):
         cursor = conn.execute(
             """INSERT OR IGNORE INTO articles (feed_id, guid, title, url, author, summary, published)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (feed_id, a["guid"], a["title"], a["url"], a["author"], a["summary"], a["published"]),
+            (
+                feed_id,
+                a["guid"],
+                a["title"],
+                a["url"],
+                a["author"],
+                a["summary"],
+                a["published"],
+            ),
         )
         inserted += cursor.rowcount
     conn.commit()
@@ -223,7 +234,10 @@ def update_article(article_id, **kwargs):
     conn = get_db()
     for field in ("is_read", "is_starred"):
         if field in kwargs:
-            conn.execute(f"UPDATE articles SET {field} = ? WHERE id = ?", (kwargs[field], article_id))
+            conn.execute(
+                f"UPDATE articles SET {field} = ? WHERE id = ?",
+                (kwargs[field], article_id),
+            )
     conn.commit()
     conn.close()
 
@@ -262,8 +276,12 @@ def set_feed_tags(feed_id, tag_names):
         if not name:
             continue
         conn.execute("INSERT OR IGNORE INTO tags (name) VALUES (?)", (name,))
-        tag_id = conn.execute("SELECT id FROM tags WHERE name = ?", (name,)).fetchone()["id"]
-        conn.execute("INSERT INTO feed_tags (feed_id, tag_id) VALUES (?, ?)", (feed_id, tag_id))
+        tag_id = conn.execute("SELECT id FROM tags WHERE name = ?", (name,)).fetchone()[
+            "id"
+        ]
+        conn.execute(
+            "INSERT INTO feed_tags (feed_id, tag_id) VALUES (?, ?)", (feed_id, tag_id)
+        )
     # Clean up orphaned tags
     conn.execute("DELETE FROM tags WHERE id NOT IN (SELECT tag_id FROM feed_tags)")
     conn.commit()
@@ -276,17 +294,22 @@ def rename_tag(old_name, new_name):
         return
     conn = get_db()
     # If new name already exists, merge into it
-    existing = conn.execute("SELECT id FROM tags WHERE name = ?", (new_name,)).fetchone()
+    existing = conn.execute(
+        "SELECT id FROM tags WHERE name = ?", (new_name,)
+    ).fetchone()
     old = conn.execute("SELECT id FROM tags WHERE name = ?", (old_name,)).fetchone()
     if not old:
         conn.close()
         return
     if existing:
         # Move feed_tags from old to existing, ignoring dupes
-        conn.execute("""
+        conn.execute(
+            """
             INSERT OR IGNORE INTO feed_tags (feed_id, tag_id)
             SELECT feed_id, ? FROM feed_tags WHERE tag_id = ?
-        """, (existing["id"], old["id"]))
+        """,
+            (existing["id"], old["id"]),
+        )
         conn.execute("DELETE FROM feed_tags WHERE tag_id = ?", (old["id"],))
         conn.execute("DELETE FROM tags WHERE id = ?", (old["id"],))
     else:

@@ -12,5 +12,13 @@ dependencies = [
 [tool.uv]
 exclude-newer = "7 days"
 
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+]
+
 [project.scripts]
 rss-reader = "app:app.run"
+
+[tool.black]
+target-version = ["py313"]

@@ -17,31 +17,42 @@ def fetch_feed(url):
     feed = d.feed
     result = {
         "title": getattr(feed, "title", url),
-        "description": getattr(feed, "subtitle", None) or getattr(feed, "description", None),
+        "description": getattr(feed, "subtitle", None)
+        or getattr(feed, "description", None),
         "site_url": getattr(feed, "link", None),
         "entries": [],
     }
 
     for entry in d.entries:
-        guid = getattr(entry, "id", None) or getattr(entry, "link", None) or entry.get("title", "")
+        guid = (
+            getattr(entry, "id", None)
+            or getattr(entry, "link", None)
+            or entry.get("title", "")
+        )
         published = None
         if hasattr(entry, "published_parsed") and entry.published_parsed:
-            published = datetime.fromtimestamp(calendar.timegm(entry.published_parsed), tz=timezone.utc).isoformat()
+            published = datetime.fromtimestamp(
+                calendar.timegm(entry.published_parsed), tz=timezone.utc
+            ).isoformat()
         elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
-            published = datetime.fromtimestamp(calendar.timegm(entry.updated_parsed), tz=timezone.utc).isoformat()
+            published = datetime.fromtimestamp(
+                calendar.timegm(entry.updated_parsed), tz=timezone.utc
+            ).isoformat()
 
         summary = getattr(entry, "summary", None) or ""
         # Truncate long summaries
         if len(summary) > 500:
             summary = summary[:500] + "..."
 
-        result["entries"].append({
-            "guid": guid,
-            "title": getattr(entry, "title", "Untitled"),
-            "url": getattr(entry, "link", None),
-            "author": getattr(entry, "author", None),
-            "summary": summary,
-            "published": published,
-        })
+        result["entries"].append(
+            {
+                "guid": guid,
+                "title": getattr(entry, "title", "Untitled"),
+                "url": getattr(entry, "link", None),
+                "author": getattr(entry, "author", None),
+                "summary": summary,
+                "published": published,
+            }
+        )
 
     return result

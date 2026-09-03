@@ -4,9 +4,18 @@ from uuid import uuid4
 
 from flask import Flask, render_template, request, jsonify, url_for
 from db import (
-    init_db, add_feed, get_feeds, delete_feed, add_articles,
-    get_articles, get_articles_for_api, update_article, mark_all_read, get_tags,
-    set_feed_tags, rename_tag,
+    init_db,
+    add_feed,
+    get_feeds,
+    delete_feed,
+    add_articles,
+    get_articles,
+    get_articles_for_api,
+    update_article,
+    mark_all_read,
+    get_tags,
+    set_feed_tags,
+    rename_tag,
 )
 from feed_parser import fetch_feed
 
@@ -51,21 +60,25 @@ def _perform_refresh(run_id):
                     run["new_items"] += inserted
             except Exception as exc:
                 with _refresh_lock:
-                    run["errors"].append({
-                        "feed_id": feed["id"],
-                        "feed_title": feed.get("title"),
-                        "url": feed["url"],
-                        "error": str(exc),
-                    })
+                    run["errors"].append(
+                        {
+                            "feed_id": feed["id"],
+                            "feed_title": feed.get("title"),
+                            "url": feed["url"],
+                            "error": str(exc),
+                        }
+                    )
     except Exception as exc:
         with _refresh_lock:
             run["status"] = "failed"
-            run["errors"].append({
-                "feed_id": None,
-                "feed_title": None,
-                "url": None,
-                "error": str(exc),
-            })
+            run["errors"].append(
+                {
+                    "feed_id": None,
+                    "feed_title": None,
+                    "url": None,
+                    "error": str(exc),
+                }
+            )
     finally:
         with _refresh_lock:
             if run["status"] != "failed":
@@ -98,7 +111,8 @@ def _start_refresh():
         _active_refresh_id = run_id
         _latest_refresh_id = run_id
         completed_ids = [
-            existing_id for existing_id, existing in _refresh_runs.items()
+            existing_id
+            for existing_id, existing in _refresh_runs.items()
             if existing_id != run_id and existing["status"] in ("completed", "failed")
         ]
         for existing_id in completed_ids[:-49]:
@@ -137,7 +151,9 @@ def api_add_feed():
         return jsonify({"error": f"Could not fetch feed: {e}"}), 400
 
     try:
-        feed_id = add_feed(url, parsed["title"], parsed["description"], parsed["site_url"])
+        feed_id = add_feed(
+            url, parsed["title"], parsed["description"], parsed["site_url"]
+        )
     except Exception:
         return jsonify({"error": "Feed already exists"}), 409
 
@@ -226,7 +242,9 @@ def api_get_articles():
     is_read = request.args.get("is_read", type=int)
     is_starred = request.args.get("is_starred", type=int)
     tag = request.args.get("tag")
-    return jsonify(get_articles(feed_id=feed_id, is_read=is_read, is_starred=is_starred, tag=tag))
+    return jsonify(
+        get_articles(feed_id=feed_id, is_read=is_read, is_starred=is_starred, tag=tag)
+    )
 
 
 def _parse_boolean_arg(name):
@@ -270,7 +288,9 @@ def api_get_articles_for_automation():
 
         tags = []
         for value in request.args.getlist("tag") + request.args.getlist("tags"):
-            tags.extend(part.strip().lower() for part in value.split(",") if part.strip())
+            tags.extend(
+                part.strip().lower() for part in value.split(",") if part.strip()
+            )
 
         articles = get_articles_for_api(
             is_read=is_read,

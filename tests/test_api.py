@@ -26,7 +26,9 @@ class ApiTestCase(unittest.TestCase):
         active = None
         with app_module._refresh_lock:
             if app_module._active_refresh_id:
-                active = app_module._refresh_runs[app_module._active_refresh_id]["_done"]
+                active = app_module._refresh_runs[app_module._active_refresh_id][
+                    "_done"
+                ]
         if active:
             active.wait(timeout=2)
         db.DB_PATH = self.original_db_path
@@ -98,7 +100,9 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
 
     def test_run_level_failure_is_reported_by_latest_status(self):
-        with patch.object(app_module, "get_feeds", side_effect=RuntimeError("database unavailable")):
+        with patch.object(
+            app_module, "get_feeds", side_effect=RuntimeError("database unavailable")
+        ):
             started = self.client.post("/api/v1/refreshes")
             result = self.wait_for_run(started.get_json()["id"])
 
@@ -130,18 +134,33 @@ class ApiTestCase(unittest.TestCase):
             }
 
         self.assertEqual(
-            db.add_articles(ai_feed, [article("ai-new", "AI new", "2026-09-02T10:00:00+00:00")]),
+            db.add_articles(
+                ai_feed, [article("ai-new", "AI new", "2026-09-02T10:00:00+00:00")]
+            ),
             1,
         )
         self.assertEqual(
-            db.add_articles(ai_feed, [article("ai-new", "AI new", "2026-09-02T10:00:00+00:00")]),
+            db.add_articles(
+                ai_feed, [article("ai-new", "AI new", "2026-09-02T10:00:00+00:00")]
+            ),
             0,
         )
-        db.add_articles(security_feed, [article("sec-new", "Security new", "2026-09-03T10:00:00+00:00")])
-        db.add_articles(other_feed, [article("other", "Other", "2026-09-03T11:00:00+00:00")])
-        db.add_articles(ai_feed, [article("ai-old", "AI old", "2026-08-01T10:00:00+00:00")])
-        db.add_articles(ai_feed, [article("ai-read", "AI read", "2026-09-03T12:00:00+00:00")])
-        read_article = next(item for item in db.get_articles() if item["guid"] == "ai-read")
+        db.add_articles(
+            security_feed,
+            [article("sec-new", "Security new", "2026-09-03T10:00:00+00:00")],
+        )
+        db.add_articles(
+            other_feed, [article("other", "Other", "2026-09-03T11:00:00+00:00")]
+        )
+        db.add_articles(
+            ai_feed, [article("ai-old", "AI old", "2026-08-01T10:00:00+00:00")]
+        )
+        db.add_articles(
+            ai_feed, [article("ai-read", "AI read", "2026-09-03T12:00:00+00:00")]
+        )
+        read_article = next(
+            item for item in db.get_articles() if item["guid"] == "ai-read"
+        )
         db.update_article(read_article["id"], is_read=1)
 
         response = self.client.get(
@@ -158,7 +177,9 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.get_json()
         self.assertEqual(body["count"], 2)
-        self.assertEqual([item["title"] for item in body["articles"]], ["Security new", "AI new"])
+        self.assertEqual(
+            [item["title"] for item in body["articles"]], ["Security new", "AI new"]
+        )
         self.assertEqual(body["articles"][0]["tags"], ["cybersecurity"])
 
     def test_article_endpoint_rejects_invalid_filters(self):

@@ -3,37 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSS Reader</title>
+    <title>Today</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="app">
-        <header class="header">
-            <h1>RSS Reader</h1>
-            <div class="header-actions">
-                <button id="mark-all-read-btn" title="Mark all as read">Mark all read</button>
-                <button id="refresh-btn" title="Refresh all feeds">Refresh</button>
+        <aside class="sidebar" aria-label="Reader navigation">
+            <nav class="feed-list" aria-label="Views, tags, and feeds"></nav>
+            <form class="add-feed" id="add-feed-form">
+                <label class="sr-only" for="feed-url-input">Feed URL</label>
+                <input type="url" id="feed-url-input" placeholder="Add a feed URL" autocomplete="url" />
+                <button id="add-feed-btn" type="submit">Add</button>
+            </form>
+        </aside>
+
+        <main class="workspace">
+            <header class="header">
+                <div class="page-heading">
+                    <p class="eyebrow" id="section-kicker">Reading queue</p>
+                    <h1 id="page-title">Today</h1>
+                    <p class="page-description" id="page-description">The four most recent unread articles.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="mark-all-read-btn" class="quiet-button" type="button">Mark all read</button>
+                    <div class="refresh-control">
+                        <span id="refresh-status" class="refresh-status" role="status">Ready to refresh</span>
+                        <button id="refresh-btn" class="icon-button" type="button" title="Refresh all feeds" aria-label="Refresh all feeds">
+                            <span aria-hidden="true">↻</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-shell">
+                <section class="articles-pane" aria-labelledby="page-title">
+                    <div class="list-toolbar">
+                        <span id="article-count" class="list-count"></span>
+                        <span class="list-note">Newest first</span>
+                    </div>
+                    <div id="articles-list" class="articles-list" aria-live="polite">
+                        <p class="empty-state">Add a feed to get started.</p>
+                    </div>
+                </section>
+
+                <aside id="article-preview" class="preview-pane" aria-label="Selected article" aria-live="polite">
+                    <div class="preview-placeholder">
+                        <span class="preview-rule" aria-hidden="true"></span>
+                        <p>Select an article to read its summary.</p>
+                    </div>
+                </aside>
             </div>
-        </header>
-        <div class="layout">
-            <aside class="sidebar">
-                <nav class="feed-list">
-                    <a href="#" class="feed-item active" data-feed-id="all">
-                        <span class="feed-name">All feeds</span>
-                        <span class="feed-count" id="all-count"></span>
-                    </a>
-                </nav>
-                <div class="add-feed">
-                    <input type="text" id="feed-url-input" placeholder="Paste feed URL..." />
-                    <button id="add-feed-btn">Add</button>
-                </div>
-            </aside>
-            <main class="content">
-                <div id="articles-list" class="articles-list">
-                    <p class="empty-state">Add a feed to get started.</p>
-                </div>
-            </main>
-        </div>
+        </main>
     </div>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

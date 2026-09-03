@@ -106,14 +106,17 @@ def delete_feed(feed_id):
 
 def add_articles(feed_id, articles):
     conn = get_db()
+    inserted = 0
     for a in articles:
-        conn.execute(
+        cursor = conn.execute(
             """INSERT OR IGNORE INTO articles (feed_id, guid, title, url, author, summary, published)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (feed_id, a["guid"], a["title"], a["url"], a["author"], a["summary"], a["published"]),
         )
+        inserted += cursor.rowcount
     conn.commit()
     conn.close()
+    return inserted
 
 
 def get_articles(feed_id=None, is_read=None, is_starred=None, tag=None):
@@ -141,6 +144,79 @@ def get_articles(feed_id=None, is_read=None, is_starred=None, tag=None):
     rows = conn.execute(query, params).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+def get_articles_for_api(
+    *,
+    is_read=None,
+    tags=None,
+    published_after=None,
+    published_before=None,
+    fetched_after=None,
+    fetched_before=None,
+    limit=100,
+):
+    """Return a bounded article list for programmatic consumers.
+
+    Multiple tags use OR semantics: an article is included when its feed has at
+    least one requested tag.
+    """
+    conn = get_db()
+    query = """
+        SELECT a.*, f.title AS feed_title, f.url AS feed_url
+        FROM articles a
+        JOIN feeds f ON f.id = a.feed_id
+        WHERE 1=1
+    """
+    params = []
+    if is_read is not None:
+        query += " AND a.is_read = ?"
+        params.append(is_read)
+    if tags:
+        placeholders = ",".join("?" for _ in tags)
+        query += f"""
+            AND EXISTS (
+                SELECT 1
+                FROM feed_tags ft
+                JOIN tags t ON t.id = ft.tag_id
+                WHERE ft.feed_id = f.id AND t.name IN ({placeholders})
+            )
+        """
+        params.extend(tags)
+    for column, value, operator in (
+        ("published", published_after, ">="),
+        ("published", published_before, "<="),
+        ("fetched_at", fetched_after, ">="),
+        ("fetched_at", fetched_before, "<="),
+    ):
+        if value is not None:
+            query += f" AND datetime(a.{column}) {operator} datetime(?)"
+            params.append(value)
+    query += " ORDER BY COALESCE(a.published, a.fetched_at) DESC, a.id DESC LIMIT ?"
+    params.append(limit)
+    rows = [dict(row) for row in conn.execute(query, params).fetchall()]
+
+    feed_ids = sorted({row["feed_id"] for row in rows})
+    tags_by_feed = {feed_id: [] for feed_id in feed_ids}
+    if feed_ids:
+        placeholders = ",".join("?" for _ in feed_ids)
+        tag_rows = conn.execute(
+            f"""
+                SELECT ft.feed_id, t.name
+                FROM feed_tags ft
+                JOIN tags t ON t.id = ft.tag_id
+                WHERE ft.feed_id IN ({placeholders})
+                ORDER BY t.name
+            """,
+            feed_ids,
+        ).fetchall()
+        for tag_row in tag_rows:
+            tags_by_feed[tag_row["feed_id"]].append(tag_row["name"])
+    conn.close()
+
+    for row in rows:
+        row["tags"] = tags_by_feed[row["feed_id"]]
+    return rows
 
 
 def update_article(article_id, **kwargs):

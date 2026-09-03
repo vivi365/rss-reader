@@ -439,12 +439,20 @@ document.getElementById("refresh-btn").addEventListener("click", async () => {
     btn.classList.add("loading-btn");
     btn.textContent = "Refreshing...";
     try {
-        await api("POST", "/api/feeds/refresh");
+        let refresh = await api("POST", "/api/v1/refreshes");
+        while (refresh.status === "pending" || refresh.status === "running") {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            refresh = await api("GET", `/api/v1/refreshes/${refresh.id}`);
+        }
         await loadSidebar();
         await loadArticles();
+        btn.textContent = `${refresh.new_items} new`;
+        if (refresh.errors.length) {
+            alert(`${refresh.errors.length} feed(s) could not be refreshed.`);
+        }
     } finally {
         btn.classList.remove("loading-btn");
-        btn.textContent = "Refresh";
+        setTimeout(() => { btn.textContent = "Refresh"; }, 1200);
     }
 });
 

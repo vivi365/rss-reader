@@ -54,7 +54,21 @@ tail -f ~/code/rss-reader/rss-reader.log
 
 ## Sandbox
 
-Runs inside a macOS sandbox (`rss-reader.sb`) — limits filesystem access to what the app actually needs.
+The launch agent can run inside a macOS sandbox that limits filesystem access.
+Create the local profile from the publishable template:
+
+```sh
+cp rss-reader.sb.example rss-reader.sb
+sandbox-exec \
+  -D "HOME_DIR=$HOME" \
+  -D "APP_DIR=$PWD" \
+  -f rss-reader.sb \
+  uv run python app.py
+```
+
+`rss-reader.sb` is intentionally ignored because a local profile may contain
+machine-specific paths. A launch agent must pass `HOME_DIR` and `APP_DIR` using
+`sandbox-exec -D` before the `-f` argument.
 
 ## How it works
 
@@ -66,7 +80,8 @@ Runs inside a macOS sandbox (`rss-reader.sb`) — limits filesystem access to wh
 - `templates/index.html` -- Single page HTML
 - `static/style.css` -- Styles
 - `static/app.js` -- All frontend logic
-- `rss-reader.sb` -- macOS sandbox profile (plain text, Scheme-like syntax)
+- `rss-reader.sb.example` -- parameterized macOS sandbox profile template
+- `rss-reader.sb` -- ignored, machine-local sandbox profile
 - `~/Library/LaunchAgents/com.rss-reader.plist` -- Launch agent config (plain text XML)
 
 ### Dependencies

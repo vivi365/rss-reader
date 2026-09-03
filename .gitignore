@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
+rss-reader.sb
 rss_reader.db
 rss_reader.db-wal
 rss_reader.db-shm

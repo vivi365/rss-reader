@@ -1,0 +1,28 @@
+(version 1)
+(allow default)
+
+(define home-dir (param "HOME_DIR"))
+(define app-dir (param "APP_DIR"))
+
+;; Deny read access to sensitive user directories.
+(deny file-read*
+    (subpath (string-append home-dir "/Documents"))
+    (subpath (string-append home-dir "/Desktop"))
+    (subpath (string-append home-dir "/Downloads"))
+    (subpath (string-append home-dir "/Pictures"))
+    (subpath (string-append home-dir "/Movies"))
+    (subpath (string-append home-dir "/Music"))
+    (subpath (string-append home-dir "/.ssh"))
+    (subpath (string-append home-dir "/.gnupg"))
+    (subpath (string-append home-dir "/.aws"))
+    (subpath (string-append home-dir "/.config"))
+    (subpath (string-append home-dir "/Library/Keychains")))
+
+;; Deny writes to the home directory except for the reader database.
+(deny file-write* (subpath home-dir))
+
+(allow file-write*
+    (literal (string-append app-dir "/rss_reader.db"))
+    (literal (string-append app-dir "/rss_reader.db-wal"))
+    (literal (string-append app-dir "/rss_reader.db-shm"))
+    (literal (string-append app-dir "/rss_reader.db-journal")))
